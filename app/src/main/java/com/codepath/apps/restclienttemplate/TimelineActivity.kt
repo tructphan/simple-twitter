@@ -1,8 +1,12 @@
 package com.codepath.apps.restclienttemplate
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -52,6 +56,33 @@ class TimelineActivity : AppCompatActivity() {
         populateHomeTimeline()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.compose) {
+            val intent = Intent(this, ComposeActivity::class.java)
+            startActivityForResult(intent, REQUEST_CODE)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            //get data from intent
+            val tweet = data?.getParcelableExtra("tweet") as Tweet
+            //update timeline
+            //modify data source of tweets
+            tweets.add(0, tweet)
+            //update adapter
+            adapter.notifyItemInserted(0)
+            rvTweets.smoothScrollToPosition(0)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     fun populateHomeTimeline() {
         client.getHomeTimeline(object : JsonHttpResponseHandler() {
             override fun onFailure(
@@ -84,5 +115,6 @@ class TimelineActivity : AppCompatActivity() {
 
     companion object {
         val TAG = "TimelineActivity"
+        val REQUEST_CODE = 10
     }
 }
